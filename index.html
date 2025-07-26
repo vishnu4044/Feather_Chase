@@ -2,13 +2,39 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Duck Hunt - Random Jump</title>
+  <title>Feather Chase</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div id="game">
-    <div id="scoreboard">Score: 0</div>
+  <div id="menu">
+    <h1>Feather Chase</h1>
+    <input type="text" id="playerName" placeholder="Enter your name" />
+    <button onclick="startGame()">New Game</button>
+    <button onclick="showLeaderboard()">Leaderboard</button>
+    <button onclick="showAbout()">About</button>
   </div>
+
+  <div id="game" class="hidden">
+    <div id="scoreboard">
+      <div id="score">Score: 0</div>
+      <div id="lives">Lives: 5</div>
+    </div>
+  </div>
+
+  <div id="leaderboard" class="hidden">
+    <h2>Leaderboard</h2>
+    <ul id="leaderboardList"></ul>
+    <button onclick="startGame()">Restart</button>
+    <button onclick="goHome()">Back</button>
+  </div>
+
+  <div id="about" class="hidden">
+    <h2>About Feather Chase</h2>
+    <p>Feather Chase was developed using HTML, CSS, and JavaScript by ChatGPT (OpenAI) based on your instructions. It features random bird flight, player scoring, life tracking, and a leaderboard. Enjoy the chase!</p>
+    <button onclick="goHome()">Back</button>
+  </div>
+
+  <audio id="bgmusic" src="assets/background.mp3" autoplay loop preload="auto"></audio>
   <audio id="gunshot" src="assets/gunshot.mp3" preload="auto"></audio>
   <script src="script.js"></script>
 </body>

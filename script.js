@@ -1,12 +1,44 @@
-const game = document.getElementById('game');
-const scoreboard = document.getElementById('scoreboard');
-const gunshot = document.getElementById('gunshot');
-let score = 0;
+let game = document.getElementById('game');
+let gunshot = document.getElementById('gunshot');
+let scoreElem = document.getElementById('score');
+let livesElem = document.getElementById('lives');
+let leaderboardList = document.getElementById('leaderboardList');
 
-function createRandomFlyAnimation(duck) {
-  const flyTime = Math.random() * 2 + 4; // 4-6 seconds
-  const xOffset = (Math.random() - 0.5) * 300; // -150 to 150 px
-  const yHeight = Math.random() * 300 + 400; // 400-700 px
+let score = 0;
+let lives = 5;
+let player = '';
+
+function startGame() {
+  const bgm = document.getElementById('bgmusic');
+  if (bgm) { bgm.play().catch(() => {}); }
+
+  player = document.getElementById('playerName').value.trim();
+  if (!player) {
+    alert("Enter your name to start.");
+    return;
+  }
+  score = 0;
+  lives = 5;
+  scoreElem.textContent = "Score: 0";
+  livesElem.textContent = "Lives: 5";
+  document.getElementById('menu').classList.add('hidden');
+  document.getElementById('leaderboard').classList.add('hidden');
+  document.getElementById('about').classList.add('hidden');
+  game.classList.remove('hidden');
+  spawnDog();
+  setTimeout(() => spawnDuck(), 2000);
+}
+
+function spawnDuck() {
+  if (lives <= 0) return;
+
+  const duck = document.createElement('div');
+  duck.classList.add('duck');
+  duck.style.left = `${Math.random() * 80 + 10}%`;
+
+  const xOffset = (Math.random() - 0.5) * 300;
+  const yHeight = Math.random() * 300 + 400;
+  const flyTime = Math.random() * 2 + 4;
 
   duck.animate([
     { transform: 'translate(0, 0)', opacity: 1 },
@@ -17,32 +49,28 @@ function createRandomFlyAnimation(duck) {
     fill: 'forwards'
   });
 
-  setTimeout(() => {
-    if (duck.parentElement) {
-      duck.remove();
-      setTimeout(spawnDuck, 1500);
-    }
-  }, flyTime * 1000);
-}
-
-function spawnDuck() {
-  const duck = document.createElement('div');
-  duck.classList.add('duck');
-  duck.style.left = `${Math.random() * 80 + 10}%`;
-
   duck.addEventListener('click', e => {
     e.stopPropagation();
     gunshot.currentTime = 0;
     gunshot.play();
     duck.remove();
     score++;
-    scoreboard.textContent = `Score: ${score}`;
-    setTimeout(spawnDuck, 2000);
+    scoreElem.textContent = `Score: ${score}`;
+    setTimeout(spawnDuck, 1500);
     spawnDog();
   });
 
   game.appendChild(duck);
-  createRandomFlyAnimation(duck);
+
+  setTimeout(() => {
+    if (duck.parentElement) {
+      duck.remove();
+      lives--;
+      livesElem.textContent = `Lives: ${lives}`;
+      if (lives > 0) setTimeout(spawnDuck, 2000);
+      else endGame();
+    }
+  }, flyTime * 1000);
 }
 
 function spawnDog() {
@@ -52,10 +80,38 @@ function spawnDog() {
   setTimeout(() => dog.remove(), 3000);
 }
 
-// Start
-spawnDog();
-setTimeout(() => {
-  for (let i = 0; i < 2; i++) {
-    setTimeout(spawnDuck, i * 4000);
-  }
-}, 3000);
+function endGame() {
+  game.classList.add('hidden');
+  saveScore();
+  showLeaderboard();
+}
+
+function saveScore() {
+  const scores = JSON.parse(localStorage.getItem("featherchase_scores") || "[]");
+  scores.push({ name: player, score });
+  scores.sort((a, b) => b.score - a.score);
+  localStorage.setItem("featherchase_scores", JSON.stringify(scores.slice(0, 10)));
+}
+
+function showLeaderboard() {
+  document.getElementById('menu').classList.add('hidden');
+  document.getElementById('leaderboard').classList.remove('hidden');
+  const scores = JSON.parse(localStorage.getItem("featherchase_scores") || "[]");
+  leaderboardList.innerHTML = '';
+  scores.forEach(s => {
+    const li = document.createElement('li');
+    li.textContent = `${s.name}: ${s.score}`;
+    leaderboardList.appendChild(li);
+  });
+}
+
+function showAbout() {
+  document.getElementById('menu').classList.add('hidden');
+  document.getElementById('about').classList.remove('hidden');
+}
+
+function goHome() {
+  document.getElementById('menu').classList.remove('hidden');
+  document.getElementById('leaderboard').classList.add('hidden');
+  document.getElementById('about').classList.add('hidden');
+}
